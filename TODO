@@ -1,0 +1,8 @@
+General
+-------
+- Make top-level links to all the projects
+
+Calendar
+-------
+- Extend with http://developer.yahoo.com/yui/examples/calendar/formsel.html (solves date input issues)
+- Add "skip months" ticky-box, going to say 6-months after a year, and then 1 year after 5
