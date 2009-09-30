@@ -1,0 +1,104 @@
+#!/usr/bin/env python
+#
+# Copyright 2007 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+import wsgiref.handlers
+from google.appengine.ext import webapp
+from icalendar import Calendar, Event
+from datetime import datetime,date,time
+from icalendar import UTC # timezone
+from time import strptime
+
+class MainHandler(webapp.RequestHandler):
+
+	def get(self):
+		name = self.request.get("name")
+		start = self.request.get("start")
+		
+		try:
+			start = strptime(start, "%Y-%m-%d")
+			start = date(*start[:3])
+		except ValueError,e:
+			start = self.request.get("start")
+			self.response.out.write("""
+				<title>Anniversary Calendar</title>
+				<body>
+				  <h1>Anniversary Calendar</h1>
+				  <small>(Built by <a href="http://tevp.net">Tom Parker</a>. <a href="http://github.com/palfrey/Travel_compare/tree/master">Source Code</a>)</small>
+				  <form action="/anniversary" method="get">
+					<div><br/>Name: <input type="text" name="name" value="%s"</div>
+					<div>Start of relationship (YYYY-MM-DD): <input type="text" name="start" value="%s"</div>
+					<div><input type="submit" value="Get Calendar"></div>
+				  </form>
+			"""%(name,start))
+			if start!="":
+				self.response.out.write("Unable to determine start date from '%s'"%start)
+			return
+		cal = Calendar()
+		cal.add('prodid', '-//calendars-anniversary//tevp.net//')
+		cal.add('version', '2.0')
+
+		now = date.today()
+
+		if now.day<start.day:
+			next = date(now.year, now.month, start.day)
+		else:
+			if now.month==12:
+				next = date(now.year+1, 1, start.day)
+			else:
+				next = date(now.year, now.month+1, start.day)
+
+		if next.month > start.month:
+			months = ((next.year-start.year)*12)+(next.month-start.month)
+		else:
+			assert next.year > start-year
+			months = ((next.year-start.year-1)*12)+(next.month-start.month)
+
+		for i in range(months,months+36): # next 3 years
+			event = Event()
+			text = ""
+			if i>=12:
+				if i<24:
+					text = "1 year"
+				else:
+					text = '%d years'%(i/12)
+			if i%12 !=0: # some months
+				if text !="":
+					text +=" and "
+				if i%12 == 1:
+					text += '1 month'
+				else:
+					text += '%d months'%(i%12)
+			event.add('summary', "%s with %s"%(text,name))
+			event.add('dtstart', datetime.combine(next,time(0)))
+			event.add('dtend', datetime.combine(next,time(23,59)))
+			event.add('dtstamp', datetime.combine(next,time(0)))
+			event.add('priority', 5)
+			cal.add_component(event)
+
+			if next.month == 12:
+				next = date(next.year+1, 1, next.day)
+			else:
+				next = date(next.year, next.month+1, next.day)
+
+		self.response.out.write(cal.as_string())
+
+def main():
+	application = webapp.WSGIApplication([('/anniversary', MainHandler)], debug=True)
+	wsgiref.handlers.CGIHandler().run(application)
+
+if __name__ == '__main__':
+	main()
