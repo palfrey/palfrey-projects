@@ -64,7 +64,7 @@ class MainHandler(webapp.RequestHandler):
 		if next.month > start.month:
 			months = ((next.year-start.year)*12)+(next.month-start.month)
 		else:
-			assert next.year > start-year
+			assert next.year > start.year
 			months = ((next.year-start.year-1)*12)+(next.month-start.month)
 
 		for i in range(months,months+36): # next 3 years
