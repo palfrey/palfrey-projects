@@ -62,25 +62,26 @@ class MainHandler(webapp.RequestHandler):
 
 		for i in range(months,months+36): # next 3 years
 			event = Event()
-			text = ""
-			if i>=12:
-				if i<24:
-					text = "1 year"
-				else:
-					text = '%d years'%(i/12)
-			if i%12 !=0: # some months
-				if text !="":
-					text +=" and "
-				if i%12 == 1:
-					text += '1 month'
-				else:
-					text += '%d months'%(i%12)
-			event.add('summary', "%s with %s"%(text,name))
-			event.add('dtstart', datetime.combine(next,time(0)))
-			event.add('dtend', datetime.combine(next,time(23,59)))
-			event.add('dtstamp', datetime.combine(next,time(0)))
-			event.add('priority', 5)
-			cal.add_component(event)
+			if i>0:
+				text = ""
+				if i>=12:
+					if i<24:
+						text += "1 year"
+					else:
+						text += '%d years'%(i/12)
+				if i%12 !=0: # some months
+					if text !="":
+						text +=" and "
+					if i%12 == 1:
+						text += '1 month'
+					else:
+						text += '%d months'%(i%12)
+				event.add('summary', "%s with %s"%(text,name))
+				event.add('dtstart', datetime.combine(next,time(0)))
+				event.add('dtend', datetime.combine(next,time(23,59)))
+				event.add('dtstamp', datetime.combine(next,time(0)))
+				event.add('priority', 5)
+				cal.add_component(event)
 
 			if next.month == 12:
 				next = date(next.year+1, 1, next.day)
