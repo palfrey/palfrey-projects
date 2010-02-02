@@ -56,16 +56,9 @@ class MainHandler(webapp.RequestHandler):
 		if now.day<start.day:
 			next = date(now.year, now.month, start.day)
 		else:
-			if now.month==12:
-				next = date(now.year+1, 1, start.day)
-			else:
-				next = date(now.year, now.month+1, start.day)
+			next = date(now.year, now.month, start.day)
 
-		if next.month > start.month:
-			months = ((next.year-start.year)*12)+(next.month-start.month)
-		else:
-			assert next.year > start.year
-			months = ((next.year-start.year-1)*12)+(next.month-start.month)
+		months = ((next.year-start.year)*12)+(next.month-start.month)
 
 		for i in range(months,months+36): # next 3 years
 			event = Event()
